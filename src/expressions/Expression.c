@@ -1,5 +1,12 @@
 #include "Expression.h"
 
+#include "expr.h"
+
+struct _Expression {
+    struct expr* expression;
+    struct expr_var_list variables;
+};
+
 Expression* Expression_create(const char* expression_string) {
     Expression* res = malloc(sizeof(Expression));
     if (res == NULL) return NULL;
