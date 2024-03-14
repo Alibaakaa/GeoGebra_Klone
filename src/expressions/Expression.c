@@ -11,6 +11,7 @@ Expression* Expression_create(const char* expression_string) {
         free(res);
         return NULL;
     }
+    return res;
 }
 
 void Expression_destroy(Expression* e) {
