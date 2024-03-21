@@ -1,0 +1,3 @@
+[submodule "3rdparty/expr"]
+	path = 3rdparty/expr
+	url = https://github.com/zserge/expr.git
