@@ -2,8 +2,12 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "Render.h"
 
 const Uint32 FRAME_INTERVAL = 20;
+
+static const int WINDOW_WIDTH = 800;
+static const int WINDOW_HEIGHT = 600;
 
 Window* Window_create() {
     Window* res = malloc(sizeof(Window));
@@ -12,7 +16,7 @@ Window* Window_create() {
 
     res->window = SDL_CreateWindow("GeoGebra Klone", 
                                    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                   800, 600, 0);
+                                   WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (res->window == NULL) {
         fprintf(stderr, "Could not create window: %s\n", SDL_GetError());
         Window_destroy(res);
@@ -36,8 +40,34 @@ void Window_destroy(Window* window) {
     free(window);
 }
 
-int Window_eventLoop(Window* window) {
+void Window_renderSegment(void* data, Point p1, Point p2) {
+    Window* window = (Window*) data;
+    static const SDL_Color LINE_COLOR = { 255, 255, 255, 255 };
+    static const float LINE_WIDTH = 5;
+
+    float distance = hypotf(p1.x - p2.x, p1.y - p2.y);
+    float dx = LINE_WIDTH * (p1.y - p2.y) / (2 * distance);
+    float dy = LINE_WIDTH * (p2.x - p1.x) / (2 * distance);
+
+    SDL_Vertex vertices[] = {
+            { { p1.x + dx, p1.y + dy }, LINE_COLOR },
+            { { p1.x - dx, p1.y - dy }, LINE_COLOR },
+            { { p2.x - dx, p2.y - dy }, LINE_COLOR },
+            { { p2.x + dx, p2.y + dy }, LINE_COLOR }
+    };
+    int indices[] = { 0, 1, 2, 0, 2, 3 };
+    if (SDL_RenderGeometry(window->renderer, NULL, vertices, 4, indices, 6) != 0) {
+        fprintf(stderr, "Could not render segment: %s\n", SDL_GetError());
+    }
+}
+
+int Window_eventLoop(Window* window, const PlotData* plotData) {
     if (window == NULL) return -1;
+    Region renderRegion = {
+        .x = 0, .y = (float) WINDOW_HEIGHT,
+        .width = (float) WINDOW_WIDTH,
+        .height = (float) -WINDOW_HEIGHT
+    };
 
     for (bool isOpen = true; isOpen;) {
         Uint32 begin = SDL_GetTicks();
@@ -50,7 +80,7 @@ int Window_eventLoop(Window* window) {
         }
 
         SDL_RenderClear(window->renderer);
-        // all drawing
+        RenderPlot(plotData, renderRegion, &Window_renderSegment, window);
         SDL_RenderPresent(window->renderer);
 
         Uint32 timePassed = SDL_GetTicks() - begin;

@@ -2,6 +2,8 @@
 
 #include "Primitives.h"
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct _PlotData {
     Region plotRegion;
