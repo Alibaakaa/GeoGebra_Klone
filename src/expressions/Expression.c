@@ -27,7 +27,8 @@ void Expression_destroy(Expression* e) {
     free(e);
 }
 
-float Expression_evaluate(const Expression* e, float x, float y) {
+float Expression_evaluate(const void* data, float x, float y) {
+    const Expression* e = (const Expression*) data;
     for (struct expr_var* var = e->variables.head; var != NULL; var = var->next) {
         if (strcmp(var->name, "x") == 0) var->value = x;
         if (strcmp(var->name, "y") == 0) var->value = y;

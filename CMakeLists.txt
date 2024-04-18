@@ -7,3 +7,4 @@ set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/3rdparty")
 
 add_subdirectory(src/expressions)
 add_subdirectory(src/gui)
+add_subdirectory(src/render)

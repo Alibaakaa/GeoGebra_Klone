@@ -2,6 +2,8 @@
 
 #include <SDL2/SDL.h>
 
+#include "PlotData.h"
+
 typedef struct _Window {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -10,4 +12,4 @@ typedef struct _Window {
 Window* Window_create();
 void Window_destroy(Window* window);
 
-int Window_eventLoop(Window* window);
+int Window_eventLoop(Window* window, const PlotData* plotData);

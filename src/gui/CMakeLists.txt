@@ -11,4 +11,6 @@ target_include_directories(geogebra_klone
 )
 target_link_libraries(geogebra_klone 
     PUBLIC SDL2::SDL2
+    PUBLIC render
+    PUBLIC expressions
 )
