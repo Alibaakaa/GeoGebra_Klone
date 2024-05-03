@@ -56,8 +56,12 @@ PlotData* getPlotData() {
         Expression_destroy(expr);
         return NULL;
     }
-    PlotData_evaluateFunction(res, &Expression_evaluate, expr);
-    Expression_destroy(expr);
+
+    res->func = &Expression_evaluate;
+    res->funcData = expr;
+    res->cleanup = &Expression_destroy;
+
+    PlotData_evaluateFunction(res);
 
     return res;
 }

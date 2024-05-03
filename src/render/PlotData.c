@@ -22,6 +22,7 @@ PlotData* PlotData_allocate(Region plotRegion, size_t xParts, size_t yParts) {
 
 void PlotData_destroy(PlotData* plotData) {
     if (plotData == NULL) return;
+    plotData->cleanup(plotData->funcData);
     free(plotData->functionValues);
     free(plotData);
 }
@@ -36,12 +37,12 @@ float PlotData_getValue(const PlotData* plotData, size_t i, size_t j) {
     return plotData->functionValues[i * (plotData->yParts + 1) + j];
 }
 
-void PlotData_evaluateFunction(PlotData* plotData, float(* func)(const void*, float, float),
-                               const void* data) {
+void PlotData_evaluateFunction(PlotData* plotData) {
     for (size_t i = 0; i <= plotData->xParts; ++i) {
         for (size_t j = 0; j <= plotData->yParts; ++j) {
             Point pt = PlotData_getPoint(plotData, i, j);
-            plotData->functionValues[i * (plotData->yParts + 1) + j] = func(data, pt.x, pt.y);
+            plotData->functionValues[i * (plotData->yParts + 1) + j] = 
+                    plotData->func(plotData->funcData, pt.x, pt.y);
         }
     }
 }
