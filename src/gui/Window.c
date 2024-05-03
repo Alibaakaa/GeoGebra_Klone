@@ -61,7 +61,70 @@ void Window_renderSegment(void* data, Point p1, Point p2) {
     }
 }
 
-int Window_eventLoop(Window* window, const PlotData* plotData) {
+void updateSteps(PlotData* plotData) {
+    plotData->xStep = plotData->plotRegion.width / (float)plotData->xParts;
+    plotData->yStep = plotData->plotRegion.height / (float)plotData->yParts;
+}
+
+void Window_rescaleRegion(PlotData* plotData, float scale) {
+    Region* region = &plotData->plotRegion;
+    float dw = region->width * (scale - 1);
+    float dh = region->height * (scale - 1);
+    region->width *= scale;
+    region->height *= scale;
+    region->x -= dw / 2;
+    region->y -= dh / 2;
+    updateSteps(plotData);
+}
+
+void Window_updateAccuracy(PlotData* plotData, float coeff) {
+    float newXParts = (float)plotData->xParts * coeff;
+    float newYParts = (float)plotData->yParts * coeff;
+    plotData->xParts = (size_t)newXParts;
+    plotData->yParts = (size_t)newYParts;
+    updateSteps(plotData);
+}
+
+void Window_processEvent(Window* window, const SDL_Event* evnt, PlotData* plotData) {
+    if (evnt->type != SDL_KEYDOWN) return;
+    SDL_Keysym keyPressed = evnt->key.keysym;
+    switch (keyPressed.sym) {
+    case SDLK_LEFT:
+        plotData->plotRegion.x -= plotData->plotRegion.width * 0.1f;
+        PlotData_evaluateFunction(plotData);
+        break;
+    case SDLK_RIGHT:
+        plotData->plotRegion.x += plotData->plotRegion.width * 0.1f;
+        PlotData_evaluateFunction(plotData);
+        break;
+    case SDLK_UP:
+        plotData->plotRegion.y += plotData->plotRegion.height * 0.1f;
+        PlotData_evaluateFunction(plotData);
+        break;
+    case SDLK_DOWN:
+        plotData->plotRegion.y -= plotData->plotRegion.height * 0.1f;
+        PlotData_evaluateFunction(plotData);
+        break;
+    case SDLK_EQUALS:
+        if (keyPressed.mod & KMOD_SHIFT) {
+            Window_updateAccuracy(plotData, 1.1f);
+        } else {
+            Window_rescaleRegion(plotData, 0.9f);
+        }
+        PlotData_evaluateFunction(plotData);
+        break;
+    case SDLK_MINUS:
+        if (keyPressed.mod & KMOD_SHIFT) {
+            Window_updateAccuracy(plotData, 0.9f);
+        } else {
+            Window_rescaleRegion(plotData, 1.1f);
+        }
+        PlotData_evaluateFunction(plotData);
+        break;
+    }
+}
+
+int Window_eventLoop(Window* window, PlotData* plotData) {
     if (window == NULL) return -1;
     Region renderRegion = {
         .x = 0, .y = (float) WINDOW_HEIGHT,
@@ -76,7 +139,7 @@ int Window_eventLoop(Window* window, const PlotData* plotData) {
                 isOpen = false;
                 break;
             }
-            // Window_processEvent(window, evnt);
+            Window_processEvent(window, &evnt, plotData);
         }
 
         SDL_RenderClear(window->renderer);
