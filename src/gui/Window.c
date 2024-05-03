@@ -61,19 +61,34 @@ void Window_renderSegment(void* data, Point p1, Point p2) {
     }
 }
 
-void Window_rescaleRegion(Region* region, float scale) {
+void updateSteps(PlotData* plotData) {
+    plotData->xStep = plotData->plotRegion.width / (float)plotData->xParts;
+    plotData->yStep = plotData->plotRegion.height / (float)plotData->yParts;
+}
+
+void Window_rescaleRegion(PlotData* plotData, float scale) {
+    Region* region = &plotData->plotRegion;
     float dw = region->width * (scale - 1);
     float dh = region->height * (scale - 1);
     region->width *= scale;
     region->height *= scale;
     region->x -= dw / 2;
     region->y -= dh / 2;
+    updateSteps(plotData);
+}
+
+void Window_updateAccuracy(PlotData* plotData, float coeff) {
+    float newXParts = (float)plotData->xParts * coeff;
+    float newYParts = (float)plotData->yParts * coeff;
+    plotData->xParts = (size_t)newXParts;
+    plotData->yParts = (size_t)newYParts;
+    updateSteps(plotData);
 }
 
 void Window_processEvent(Window* window, const SDL_Event* evnt, PlotData* plotData) {
     if (evnt->type != SDL_KEYDOWN) return;
-    SDL_KeyCode keyPressed = evnt->key.keysym.sym;
-    switch (keyPressed) {
+    SDL_Keysym keyPressed = evnt->key.keysym;
+    switch (keyPressed.sym) {
     case SDLK_LEFT:
         plotData->plotRegion.x -= plotData->plotRegion.width * 0.1f;
         PlotData_evaluateFunction(plotData);
@@ -91,11 +106,19 @@ void Window_processEvent(Window* window, const SDL_Event* evnt, PlotData* plotDa
         PlotData_evaluateFunction(plotData);
         break;
     case SDLK_EQUALS:
-        Window_rescaleRegion(&plotData->plotRegion, 0.9f);
+        if (keyPressed.mod & KMOD_SHIFT) {
+            Window_updateAccuracy(plotData, 1.1f);
+        } else {
+            Window_rescaleRegion(plotData, 0.9f);
+        }
         PlotData_evaluateFunction(plotData);
         break;
     case SDLK_MINUS:
-        Window_rescaleRegion(&plotData->plotRegion, 1.1f);
+        if (keyPressed.mod & KMOD_SHIFT) {
+            Window_updateAccuracy(plotData, 0.9f);
+        } else {
+            Window_rescaleRegion(plotData, 1.1f);
+        }
         PlotData_evaluateFunction(plotData);
         break;
     }
