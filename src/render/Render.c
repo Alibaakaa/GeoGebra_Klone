@@ -1,5 +1,7 @@
 #include "Render.h"
 
+#include <math.h>
+
 static void (*g_renderCall)(void*, Point, Point) = NULL;
 static void* g_renderData = NULL;
 static Region g_plotRegion = {};
@@ -93,5 +95,45 @@ void RenderPlot(const PlotData* plotData, Region renderRegion,
                 }
             }
         }
+    }
+}
+
+float getGridStep(float length) {
+    float k = floorf(log10f(length / 4.f));
+    float step = powf(10.f, k);
+    if (length / step > 20.f) {
+        step *= 5.f;
+    }
+    return step;
+}
+
+void RenderGrid(Region plotRegion, Region renderRegion,
+                void (*renderFunc)(void*, Point, Point), void* data) {
+    g_renderCall = renderFunc;
+    g_renderData = data;
+    g_plotRegion = plotRegion;
+    g_renderRegion = renderRegion;
+
+    float xStep = getGridStep(plotRegion.width);
+    float yStep = getGridStep(plotRegion.height);
+
+    Point p1 = {}, p2 = {};
+
+    p1.y = plotRegion.y;
+    p2.y = plotRegion.y + plotRegion.height;
+    for (float x = ceilf(plotRegion.x / xStep) * xStep; 
+         x < plotRegion.x + plotRegion.width;
+         x += xStep) {
+        p1.x = p2.x = x;
+        renderSegment(p1, p2);
+    }
+
+    p1.x = plotRegion.x;
+    p2.x = plotRegion.x + plotRegion.width;
+    for (float y = ceilf(plotRegion.y / yStep) * yStep; 
+         y < plotRegion.y + plotRegion.height;
+         y += yStep) {
+        p1.y = p2.y = y;
+        renderSegment(p1, p2);
     }
 }

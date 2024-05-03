@@ -40,25 +40,35 @@ void Window_destroy(Window* window) {
     free(window);
 }
 
-void Window_renderSegment(void* data, Point p1, Point p2) {
-    Window* window = (Window*) data;
-    static const SDL_Color LINE_COLOR = { 255, 255, 255, 255 };
-    static const float LINE_WIDTH = 5;
-
+void Window_renderSegment(Window* window, Point p1, Point p2, SDL_Color color, float width) {
     float distance = hypotf(p1.x - p2.x, p1.y - p2.y);
-    float dx = LINE_WIDTH * (p1.y - p2.y) / (2 * distance);
-    float dy = LINE_WIDTH * (p2.x - p1.x) / (2 * distance);
+    float dx = width * (p1.y - p2.y) / (2 * distance);
+    float dy = width * (p2.x - p1.x) / (2 * distance);
 
     SDL_Vertex vertices[] = {
-            { { p1.x + dx, p1.y + dy }, LINE_COLOR },
-            { { p1.x - dx, p1.y - dy }, LINE_COLOR },
-            { { p2.x - dx, p2.y - dy }, LINE_COLOR },
-            { { p2.x + dx, p2.y + dy }, LINE_COLOR }
+            { { p1.x + dx, p1.y + dy }, color },
+            { { p1.x - dx, p1.y - dy }, color },
+            { { p2.x - dx, p2.y - dy }, color },
+            { { p2.x + dx, p2.y + dy }, color }
     };
     int indices[] = { 0, 1, 2, 0, 2, 3 };
     if (SDL_RenderGeometry(window->renderer, NULL, vertices, 4, indices, 6) != 0) {
         fprintf(stderr, "Could not render segment: %s\n", SDL_GetError());
     }
+}
+
+void Window_renderPlotSegment(void* data, Point p1, Point p2) {
+    Window* window = (Window*) data;
+    static const SDL_Color LINE_COLOR = { 255, 0, 55, 255 };
+    static const float LINE_WIDTH = 5;
+    Window_renderSegment(window, p1, p2, LINE_COLOR, LINE_WIDTH);
+}
+
+void Window_renderGridSegment(void* data, Point p1, Point p2) {
+    Window* window = (Window*)data;
+    static const SDL_Color GRID_COLOR = { 100, 100, 100, 255 };
+    static const float GRID_WIDTH = 1.2f;
+    Window_renderSegment(window, p1, p2, GRID_COLOR, GRID_WIDTH);
 }
 
 void updateSteps(PlotData* plotData) {
@@ -143,7 +153,8 @@ int Window_eventLoop(Window* window, PlotData* plotData) {
         }
 
         SDL_RenderClear(window->renderer);
-        RenderPlot(plotData, renderRegion, &Window_renderSegment, window);
+        RenderGrid(plotData->plotRegion, renderRegion, &Window_renderGridSegment, window);
+        RenderPlot(plotData, renderRegion, &Window_renderPlotSegment, window);
         SDL_RenderPresent(window->renderer);
 
         Uint32 timePassed = SDL_GetTicks() - begin;
