@@ -22,35 +22,23 @@ Expression* getExpression() {
     return Expression_create(buf);
 }
 
-Region getRenderRegion() {
-    Region renderRegion = {
-        .x = -8, .y = -6,
-        .width = 16, .height = 12
-    };
-    // printf("Enter render region (x, y, width, height): ");
-    // fflush(stdout);
-    // scanf("%f%f%f%f", &renderRegion.x, &renderRegion.y, &renderRegion.width, &renderRegion.height);
-    return renderRegion;
-}
-
-struct Parts {
-    size_t xParts;
-    size_t yParts;
-} getRenderAccuracy() {
-    struct Parts res;
-    printf("Enter render accuracy: ");
-    fflush(stdout);
-    scanf("%lu%lu", &res.xParts, &res.yParts);
-    return res;
-}
+static const float START_X = -8;
+static const float START_Y = -6;
+static const float START_WIDTH = 16;
+static const float START_HEIGHT = 12;
+static const float START_XPARTS = 400;
+static const float START_YPARTS = 300;
 
 PlotData* getPlotData() {
     Expression* expr = getExpression();
     if (expr == NULL) return NULL;
-    Region plotRegion = getRenderRegion();
-    struct Parts parts = getRenderAccuracy();
+    Region plotRegion = {
+        .x = START_X, .y = START_Y,
+        .width = START_WIDTH,
+        .height = START_HEIGHT
+    };
 
-    PlotData* res = PlotData_allocate(plotRegion, parts.xParts, parts.yParts);
+    PlotData* res = PlotData_allocate(plotRegion, START_XPARTS, START_YPARTS);
     if (res == NULL) {
         fprintf(stderr, "Could not allocate plot data\n");
         Expression_destroy(expr);
@@ -59,7 +47,7 @@ PlotData* getPlotData() {
 
     res->func = &Expression_evaluate;
     res->funcData = expr;
-    res->cleanup = &Expression_destroy;
+    res->cleanup = (void (*)(void*))&Expression_destroy;
 
     PlotData_evaluateFunction(res);
 

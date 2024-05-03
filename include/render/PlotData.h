@@ -14,7 +14,7 @@ typedef struct _PlotData {
     float* functionValues;
 
     float (*func)(const void*, float, float);
-    const void* funcData;
+    void* funcData;
     void (*cleanup)(void*);
 } PlotData;
 
