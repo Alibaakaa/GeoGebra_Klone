@@ -76,21 +76,27 @@ void Window_processEvent(Window* window, const SDL_Event* evnt, PlotData* plotDa
     switch (keyPressed) {
     case SDLK_LEFT:
         plotData->plotRegion.x -= plotData->plotRegion.width * 0.1f;
+        PlotData_evaluateFunction(plotData);
         break;
     case SDLK_RIGHT:
         plotData->plotRegion.x += plotData->plotRegion.width * 0.1f;
+        PlotData_evaluateFunction(plotData);
         break;
     case SDLK_UP:
         plotData->plotRegion.y += plotData->plotRegion.height * 0.1f;
+        PlotData_evaluateFunction(plotData);
         break;
     case SDLK_DOWN:
         plotData->plotRegion.y -= plotData->plotRegion.height * 0.1f;
+        PlotData_evaluateFunction(plotData);
         break;
-    case SDLK_PLUS:
-        Window_rescaleRegion(&plotData->plotRegion, 1.1f);
+    case SDLK_EQUALS:
+        Window_rescaleRegion(&plotData->plotRegion, 0.9f);
+        PlotData_evaluateFunction(plotData);
         break;
     case SDLK_MINUS:
-        Window_rescaleRegion(&plotData->plotRegion, 0.9f);
+        Window_rescaleRegion(&plotData->plotRegion, 1.1f);
+        PlotData_evaluateFunction(plotData);
         break;
     }
 }
