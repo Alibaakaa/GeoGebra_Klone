@@ -23,10 +23,13 @@ Expression* getExpression() {
 }
 
 Region getRenderRegion() {
-    Region renderRegion;
-    printf("Enter render region (x, y, width, height): ");
-    fflush(stdout);
-    scanf("%f%f%f%f", &renderRegion.x, &renderRegion.y, &renderRegion.width, &renderRegion.height);
+    Region renderRegion = {
+        .x = -8, .y = -6,
+        .width = 16, .height = 12
+    };
+    // printf("Enter render region (x, y, width, height): ");
+    // fflush(stdout);
+    // scanf("%f%f%f%f", &renderRegion.x, &renderRegion.y, &renderRegion.width, &renderRegion.height);
     return renderRegion;
 }
 

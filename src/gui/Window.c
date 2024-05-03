@@ -61,7 +61,41 @@ void Window_renderSegment(void* data, Point p1, Point p2) {
     }
 }
 
-int Window_eventLoop(Window* window, const PlotData* plotData) {
+void Window_rescaleRegion(Region* region, float scale) {
+    float dw = region->width * (scale - 1);
+    float dh = region->height * (scale - 1);
+    region->width *= scale;
+    region->height *= scale;
+    region->x -= dw / 2;
+    region->y -= dh / 2;
+}
+
+void Window_processEvent(Window* window, const SDL_Event* evnt, PlotData* plotData) {
+    if (evnt->type != SDL_KEYDOWN) return;
+    SDL_KeyCode keyPressed = evnt->key.keysym.sym;
+    switch (keyPressed) {
+    case SDLK_LEFT:
+        plotData->plotRegion.x -= plotData->plotRegion.width * 0.1f;
+        break;
+    case SDLK_RIGHT:
+        plotData->plotRegion.x += plotData->plotRegion.width * 0.1f;
+        break;
+    case SDLK_UP:
+        plotData->plotRegion.y += plotData->plotRegion.height * 0.1f;
+        break;
+    case SDLK_DOWN:
+        plotData->plotRegion.y -= plotData->plotRegion.height * 0.1f;
+        break;
+    case SDLK_PLUS:
+        Window_rescaleRegion(&plotData->plotRegion, 1.1f);
+        break;
+    case SDLK_MINUS:
+        Window_rescaleRegion(&plotData->plotRegion, 0.9f);
+        break;
+    }
+}
+
+int Window_eventLoop(Window* window, PlotData* plotData) {
     if (window == NULL) return -1;
     Region renderRegion = {
         .x = 0, .y = (float) WINDOW_HEIGHT,
@@ -76,7 +110,7 @@ int Window_eventLoop(Window* window, const PlotData* plotData) {
                 isOpen = false;
                 break;
             }
-            // Window_processEvent(window, evnt);
+            Window_processEvent(window, &evnt, plotData);
         }
 
         SDL_RenderClear(window->renderer);

@@ -12,4 +12,4 @@ typedef struct _Window {
 Window* Window_create();
 void Window_destroy(Window* window);
 
-int Window_eventLoop(Window* window, const PlotData* plotData);
+int Window_eventLoop(Window* window, PlotData* plotData);
